@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>STARTAP</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0b0d;color:#f5efe0;font-family:Inter,system-ui,sans-serif;text-align:center}
+.l{font-size:34px;font-weight:800;letter-spacing:.3em;background:linear-gradient(135deg,#f6e3a1,#d4af37 50%,#8a6d1c);-webkit-background-clip:text;color:transparent}
+#m{color:#9a9486;margin-top:14px}</style></head>
+<body><div><div class="l">STARTAP</div><p id="m">Opening your review page…</p></div>
+<script>
+(async()=>{const id=(new URLSearchParams(location.search).get('c')||'').replace(/[^0-9A-Za-z-]/g,'');const m=document.getElementById('m');
+try{const d=await (await fetch('../links.json?v='+Date.now(),{cache:'no-store'})).json();const c=d[id];
+if(c&&c.active&&/^https:\/\//i.test(c.url)){location.replace(c.url);return}
+m.textContent=c?'This card has not been activated yet.':'Card not found.'}catch(e){m.textContent='Could not load. Please try again.'}})();
+</script></body></html>

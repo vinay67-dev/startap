@@ -1,0 +1,67 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>STARTAP Admin</title>
+<style>
+:root{--bg:#0b0b0d;--p:#141418;--p2:#1b1b21;--line:#2a2a33;--t:#f5efe0;--m:#9a9486;--g:#d4af37;--ok:#4ade80;--bad:#f87171;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#2a2210,var(--bg) 45%);color:var(--t);font:15px Inter,system-ui,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--line)}
+.logo{font-weight:800;letter-spacing:.3em;font-size:20px;background:linear-gradient(135deg,#f6e3a1,#d4af37 50%,#8a6d1c);-webkit-background-clip:text;color:transparent}
+nav{display:flex;gap:6px;flex:1}nav button{background:none;border:0;color:var(--m);padding:8px 14px;border-radius:99px;cursor:pointer;font:inherit}nav button.on{background:var(--p2);color:var(--g)}
+#conn{font-size:12px;padding:5px 10px;border-radius:99px;background:var(--p2);color:var(--m)}#conn.ok{color:var(--ok)}
+main{max-width:1100px;margin:0 auto;padding:20px}.stats{display:flex;gap:12px;margin-bottom:16px}.stat{flex:1;background:var(--p);border:1px solid var(--line);border-radius:14px;padding:14px}.stat b{display:block;font-size:26px;color:var(--g)}.stat span{color:var(--m);font-size:12px}
+.two{display:grid;grid-template-columns:320px 1fr;gap:16px}@media(max-width:760px){.two{grid-template-columns:1fr}}
+.panel{background:var(--p);border:1px solid var(--line);border-radius:16px;padding:16px}
+input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--t);border-radius:10px;padding:11px 12px;font:inherit;margin:6px 0 10px}input:focus{outline:1px solid var(--g)}
+#list{max-height:460px;overflow:auto;margin-top:6px}.row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;cursor:pointer}.row:hover{background:var(--p2)}.row.sel{background:var(--p2);outline:1px solid var(--g)}
+.tag{font-size:11px;padding:3px 8px;border-radius:99px;background:#2a1414;color:var(--bad)}.tag.on{background:#10261a;color:var(--ok)}
+.btn{background:linear-gradient(135deg,#f6e3a1,#d4af37 60%,#a07f1c);color:#111;border:0;border-radius:10px;padding:11px 16px;font:600 14px inherit;cursor:pointer}.btn.s{background:var(--p2);color:var(--t);border:1px solid var(--line)}.btns{display:flex;gap:8px;flex-wrap:wrap}
+.perm{font-size:12px;color:var(--m);word-break:break-all;background:var(--bg);padding:8px 10px;border-radius:8px;margin:6px 0 12px}
+#prev{float:right;width:120px;border-radius:10px;overflow:hidden;margin:0 0 10px 12px}#prev svg{width:100%;height:auto;display:block}
+#msg{margin-top:12px;font-size:13px}.err{color:var(--bad)}.good{color:var(--ok)}
+.qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:14px}.qc{background:#fff;color:#111;border-radius:10px;padding:8px;text-align:center;font:600 12px system-ui;cursor:pointer}.qc svg{width:100%;height:auto;display:block}
+@media print{header,.noprint,.stats{display:none}body{background:#fff}.qrgrid{grid-template-columns:repeat(4,1fr)}.qc{border:1px solid #ccc;break-inside:avoid}}
+</style></head><body>
+<header><div class="logo">STARTAP</div><nav><button data-t="cards" class="on">Cards</button><button data-t="qr">QR Codes</button><button data-t="set">Settings</button></nav><span id="conn">Not connected</span></header>
+<main>
+<section id="t-cards"><div class="stats"><div class="stat"><b id="s1">–</b><span>Total cards</span></div><div class="stat"><b id="s2">–</b><span>Active</span></div><div class="stat"><b id="s3">–</b><span>Not activated</span></div></div>
+<div class="panel noprint" style="margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>Need more cards?</b><input id="addn" type="number" min="1" max="500" value="50" style="width:90px;margin:0"><button class="btn" id="add">Add cards</button><span style="color:var(--m);font-size:13px">New IDs continue after the last one. Existing QR codes never change.</span><div id="gmsg" style="width:100%;font-size:13px"></div></div>
+<div class="two"><div class="panel"><input id="q" placeholder="Search card ID…"><div id="list"></div></div>
+<div class="panel"><div id="empty" style="color:var(--m)">Select a card from the list.</div>
+<div id="ed" hidden><div id="prev"></div><h2 style="margin:0">Card <span id="eid"></span></h2><div class="perm" id="perm"></div>
+<label>Google Review link</label><input id="url" placeholder="https://g.page/r/…/review"><div class="btns"><button class="btn" id="save">Save &amp; Activate</button><button class="btn s" id="test">Test link</button><button class="btn s" id="deact">Deactivate</button><button class="btn s" id="copy">Copy card URL</button></div><div id="msg"></div></div></div></div></section>
+<section id="t-qr" hidden><div class="panel"><p style="margin-top:0;color:var(--m)">These QR codes only contain each card's permanent URL, so the pattern never changes. Base URL: <b id="base"></b></p><div class="btns noprint"><label style="align-self:center;color:var(--m)">From card #</label><input id="from" type="number" min="1" value="1" style="width:90px;margin:0"><button class="btn" id="zip">Download ZIP (SVG)</button><button class="btn s" onclick="print()">Print sheet</button></div><div class="qrgrid" id="qrg"></div></div></section>
+<section id="t-set" hidden><div class="panel" style="max-width:520px"><label>GitHub username</label><input id="o"><label>Repository name</label><input id="rp"><label>Branch</label><input id="br" value="main"><label>GitHub token (fine-grained, Contents: read &amp; write on this repo only)</label><input id="tk" type="password"><div class="btns"><button class="btn" id="sv">Save &amp; connect</button><button class="btn s" id="clr">Disconnect</button></div><p style="color:var(--m);font-size:13px">Your token is stored only in this browser.</p></div></section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);let data={},sel=null;
+const h=location.hostname,def={owner:h.endsWith('github.io')?h.split('.')[0]:'',repo:location.pathname.split('/')[1]||'',branch:'main',token:''};
+let cfg=Object.assign(def,JSON.parse(localStorage.getItem('startap_cfg')||'{}'));
+const base=new URL('../r/',location.href).href;$('#base').textContent=base;
+const cardUrl=id=>`${base}?c=${id}`;
+function qrSvg(t,px=256,mg=4){const q=qrcode(0,'Q');q.addData(t);q.make();const n=q.getModuleCount();let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+mg} ${r+mg}h1v1h-1z`;return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n+2*mg} ${n+2*mg}" width="${px}" height="${px}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`}
+const api=(m,b)=>fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/links.json`+(m==='GET'?`?ref=${cfg.branch}&t=${Date.now()}`:''),{method:m,headers:{Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json'},body:b&&JSON.stringify(b)}).then(async r=>{if(!r.ok)throw new Error(r.status===401||r.status===403?'Token rejected. Check token permissions.':r.status===404?'Repo/file not found. Check Settings.':'GitHub error '+r.status);return r.json()});
+const dec=b=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\n/g,'')),c=>c.charCodeAt(0))));
+const enc=s=>{let b='';new TextEncoder().encode(s).forEach(x=>b+=String.fromCharCode(x));return btoa(b)};
+async function load(){try{if(cfg.token){const j=await api('GET');data=dec(j.content);$('#conn').textContent='Connected';$('#conn').className='ok'}else{data=await (await fetch('../links.json?t='+Date.now())).json();$('#conn').textContent='Read-only: add token in Settings'}}catch(e){$('#conn').textContent='Error';flash(e.message,1)}render()}
+async function mutate(id,fn,ok){if(!cfg.token)return flash('Connect your GitHub token in Settings first.',1);flash('Saving…');try{const j=await api('GET');const d=dec(j.content);d[id]=d[id]||{};fn(d[id]);d[id].updated=new Date().toISOString();await api('PUT',{message:`Update card ${id}`,content:enc(JSON.stringify(d,null,1)),sha:j.sha,branch:cfg.branch});data=d;render();flash(ok+' Live in about 1 minute.')}catch(e){flash(e.message,1)}}
+function flash(t,bad){for(const e of [$('#msg'),$('#gmsg')]){e.textContent=t;e.className=bad?'err':'good'}}
+function render(){const ids=Object.keys(data).sort((a,b)=>a-b),a=ids.filter(i=>data[i].active).length;$('#s1').textContent=ids.length;$('#s2').textContent=a;$('#s3').textContent=ids.length-a;
+const f=$('#q').value.trim();$('#list').innerHTML=ids.filter(i=>i.includes(f)).map(i=>`<div class="row ${i===sel?'sel':''}" data-i="${i}"><b>#${i}</b><span class="tag ${data[i].active?'on':''}">${data[i].active?'Active':'Inactive'}</span></div>`).join('');
+if(sel){$('#empty').hidden=true;$('#ed').hidden=false;$('#eid').textContent='#'+sel;$('#perm').textContent=cardUrl(sel);$('#prev').innerHTML=qrSvg(cardUrl(sel));$('#save').textContent=data[sel].active?'Update link':'Save & Activate'}}
+$('#list').onclick=e=>{const r=e.target.closest('.row');if(!r)return;sel=r.dataset.i;$('#url').value=data[sel].url||'';$('#msg').textContent='';render()};
+$('#q').oninput=render;
+$('#save').onclick=()=>{const u=$('#url').value.trim();if(!/^https:\/\/\S+$/i.test(u))return flash('Paste a full link starting with https://',1);if(!/google|g\.page|goo\.gl/i.test(u)&&!confirm('This does not look like a Google link. Save anyway?'))return;mutate(sel,c=>{c.url=u;c.active=true},'Saved and active.')};
+$('#deact').onclick=()=>mutate(sel,c=>{c.active=false},'Card deactivated.');
+$('#test').onclick=()=>{const u=$('#url').value.trim();if(/^https:\/\//i.test(u))open(u,'_blank')};
+$('#copy').onclick=()=>navigator.clipboard.writeText(cardUrl(sel)).then(()=>flash('Card URL copied.'));
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));['cards','qr','set'].forEach(t=>$('#t-'+t).hidden=t!==b.dataset.t);if(b.dataset.t==='qr')drawQr()});
+function drawQr(){if(!/^https?:$/.test(location.protocol)||h==='localhost')alert('Open this admin from your live website so QR codes contain the correct permanent URL.');$('#qrg').innerHTML=Object.keys(data).sort((a,b)=>a-b).map(i=>`<div class="qc" data-i="${i}" title="Click to download">${qrSvg(cardUrl(i),200,2)}STARTAP ${i}</div>`).join('')}
+const dl=(blob,n)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=n;a.click()};
+$('#qrg').onclick=e=>{const c=e.target.closest('.qc');if(c)dl(new Blob([qrSvg(cardUrl(c.dataset.i),1000,4)],{type:'image/svg+xml'}),`STARTAP-${c.dataset.i}.svg`)};
+$('#zip').onclick=async()=>{const z=new JSZip();Object.keys(data).sort((a,b)=>a-b).filter(i=>+i>=(+$('#from').value||1)).forEach(i=>z.file(`STARTAP-${i}.svg`,qrSvg(cardUrl(i),1000,4)));dl(await z.generateAsync({type:'blob'}),'STARTAP-QR-codes.zip')};
+$('#o').value=cfg.owner;$('#rp').value=cfg.repo;$('#br').value=cfg.branch;$('#tk').value=cfg.token;
+$('#sv').onclick=()=>{cfg={owner:$('#o').value.trim(),repo:$('#rp').value.trim(),branch:$('#br').value.trim()||'main',token:$('#tk').value.trim()};localStorage.setItem('startap_cfg',JSON.stringify(cfg));load()};
+$('#clr').onclick=()=>{localStorage.removeItem('startap_cfg');cfg.token='';$('#tk').value='';load()};
+$('#add').onclick=async()=>{const n=Math.min(500,Math.max(1,parseInt($('#addn').value)||0));if(!cfg.token)return flash('Connect your GitHub token in Settings first.',1);flash('Adding…');try{const j=await api('GET');const d=dec(j.content);const m=Math.max(0,...Object.keys(d).map(Number));for(let i=1;i<=n;i++)d[String(m+i).padStart(3,'0')]={url:'',active:false,updated:''};await api('PUT',{message:`Add ${n} cards`,content:enc(JSON.stringify(d,null,1)),sha:j.sha,branch:cfg.branch});data=d;render();flash(`Added ${n} cards (#${String(m+1).padStart(3,'0')} to #${String(m+n).padStart(3,'0')}). Open QR Codes, set "From card #" to ${m+1}, and download.`)}catch(e){flash(e.message,1)}};
+load();
+</script></body></html>
